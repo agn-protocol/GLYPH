@@ -2,30 +2,26 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>GLYPH — общение без слов</title>
   <meta name="description" content="Социальная сеть где люди общаются только образами и символами">
   <meta name="theme-color" content="#fafaf8">
-  <link rel="stylesheet" href="style.css">
-
-  <!-- Open Graph -->
-  <meta property="og:title" content="GLYPH">
-  <meta property="og:description" content="Общение без слов — только образы">
-  <meta property="og:url" content="https://agn-protocol.github.io/GLYPH">
-
-  <!-- PWA -->
-  <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="GLYPH">
+  <meta property="og:title" content="GLYPH">
+  <meta property="og:description" content="Общение без слов — только образы">
+  <meta property="og:url" content="https://agn-protocol.github.io/GLYPH">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div id="root">
 <div class="app">
 
+  <!-- ТОПБАР -->
   <div class="topbar">
     <div class="logo">
-      <svg viewBox="0 0 22 22" width="22" height="22">
+      <svg viewBox="0 0 22 22" width="20" height="20">
         <rect x="2" y="2" width="7" height="7" rx="2" fill="currentColor" opacity=".7"/>
         <rect x="13" y="2" width="7" height="7" rx="2" fill="currentColor" opacity=".35"/>
         <rect x="2" y="13" width="7" height="7" rx="2" fill="currentColor" opacity=".35"/>
@@ -33,7 +29,7 @@
       </svg>
       <span class="logo-name">GLYPH</span>
     </div>
-    <div class="db-status" id="db-status">● локально</div>
+    <span class="dbs" id="dbs">● локально</span>
   </div>
 
   <!-- РЕГИСТРАЦИЯ -->
@@ -59,14 +55,14 @@
         <label>пароль</label>
         <input type="password" id="r-pass" placeholder="••••••••"/>
       </div>
-      <div id="r-name-field" class="fld">
-        <label>как тебя называть (необязательно)</label>
-        <input type="text" id="r-name" placeholder=""/>
+      <div class="fld" id="r-nf">
+        <label>как тебя называть</label>
+        <input type="text" id="r-name" placeholder="необязательно"/>
       </div>
       <div class="errmsg" id="r-err"></div>
-      <button class="pbtn" id="r-submit" onclick="doReg()">создать аккаунт</button>
-      <div class="rsw" id="r-switch">уже есть аккаунт?
-        <span onclick="toggleMode()">войти</span>
+      <button class="pbtn" onclick="doReg()">создать аккаунт</button>
+      <div class="rsw" id="r-sw">
+        уже есть аккаунт? <span onclick="toggleMode()">войти</span>
       </div>
     </div>
   </div>
@@ -76,43 +72,43 @@
     <div class="scroll" id="feed-list"></div>
   </div>
 
-  <!-- ДИАЛОГ -->
+  <!-- ЧАТ -->
   <div id="s-chat" class="screen">
-  <div class="chat-header">
-    <div class="chat-back" onclick="switchTab('contacts')">‹</div>
-    <div class="chat-who" id="chat-who">диалог</div>
-  </div>
-  <div class="chat-body" id="chat-body"></div>
-  <div class="compose-area">
-    <div class="compose-input" id="compose-input" onclick="focusCompose()">
-      <span class="compose-placeholder" id="compose-ph">нажми + чтобы добавить образ...</span>
+    <div class="chat-header">
+      <div class="chat-back" onclick="switchTab('contacts')">‹</div>
+      <div class="chat-who" id="chat-who">диалог</div>
     </div>
-    <div class="compose-actions">
-      <div class="open-lib-btn" onclick="openLib()">
-        <svg viewBox="0 0 14 14" fill="none" width="12" height="12">
-          <rect x="1" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1"/>
-          <rect x="8" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1"/>
-          <rect x="1" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1"/>
-          <rect x="8" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1"/>
-        </svg>
-        добавить образ
+    <div class="chat-body" id="chat-body"></div>
+    <div class="compose-area">
+      <div class="compose-input" id="compose-input" onclick="focusCompose()">
+        <span class="compose-placeholder" id="compose-ph">нажми + чтобы добавить образ...</span>
       </div>
-      <div class="sbtn" onclick="sendMsg()">
-        <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
-          <path d="M3 13 L13 8 L3 3 L3 7 L10 8 L3 9 Z" fill="currentColor"/>
-        </svg>
+      <div class="compose-actions">
+        <div class="open-lib-btn" onclick="openLib()">
+          <svg viewBox="0 0 14 14" fill="none" width="12" height="12">
+            <rect x="1" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1"/>
+            <rect x="8" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1"/>
+            <rect x="1" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1"/>
+            <rect x="8" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1"/>
+          </svg>
+          добавить образ
+        </div>
+        <div class="sbtn" onclick="sendMsg()">
+          <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
+            <path d="M3 13 L13 8 L3 3 L3 7 L10 8 L3 9 Z" fill="currentColor"/>
+          </svg>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
   <!-- ПОИСК -->
   <div id="s-search" class="screen">
     <div class="swrap">
       <input class="sinput" placeholder="найти по образам..."
-        id="search-input" oninput="filterSearch()"/>
+        id="sinput" oninput="filterSearch()"/>
     </div>
-    <div class="slabel">похожие профили</div>
+    <div class="slabel">все пользователи</div>
     <div class="scroll" id="search-list"></div>
   </div>
 
@@ -132,16 +128,16 @@
   <div id="s-profile" class="screen">
     <div class="scroll">
       <div class="ptop">
-        <div class="pemail" id="prof-email-top"></div>
-        <div class="slabel" style="padding:8px 0 4px">мои образы</div>
-        <div class="pglyphs" id="prof-glyphs"></div>
+        <div class="pemail" id="p-email"></div>
+        <div class="slabel" style="padding:8px 0 3px">мои образы</div>
+        <div class="pglyphs" id="p-glyphs"></div>
       </div>
-      <div class="slabel">библиотека — выбери до 8 образов</div>
+      <div class="slabel">библиотека — выбери до 8</div>
       <div class="lgrid" id="lib-profile"></div>
       <div class="slabel">настройки</div>
       <div class="srow">
         <span class="slbl">почта</span>
-        <span class="sval" id="prof-email"></span>
+        <span class="sval" id="p-email2"></span>
         <span class="sarr">›</span>
       </div>
       <div class="srow" onclick="alert('отправим письмо для смены пароля')">
@@ -150,7 +146,7 @@
         <span class="sarr">›</span>
       </div>
       <div class="logout" onclick="doLogout()">
-        <span>выйти из аккаунта</span>
+        <span>выйти</span>
       </div>
     </div>
   </div>
@@ -159,15 +155,15 @@
   <div id="s-detail" class="screen">
     <div class="dh">
       <div class="dbk" onclick="goBack()">‹ назад</div>
-      <div class="dttl" id="detail-title"></div>
+      <div class="dttl" id="dtitle"></div>
     </div>
-    <div class="dbody" id="detail-body"></div>
+    <div class="dbody" id="dbody"></div>
   </div>
 
   <!-- БИБЛИОТЕКА ДЛЯ ЧАТА -->
-  <div id="s-library" class="screen">
+  <div id="s-lib" class="screen">
     <div class="dh">
-      <div class="dbk" onclick="goBack()">‹ назад</div>
+      <div class="dbk" onclick="closeLib()">‹ назад</div>
       <div class="dttl">выбери образ</div>
     </div>
     <div class="scroll">
@@ -175,8 +171,8 @@
     </div>
   </div>
 
-  <!-- НИЖНЯЯ НАВИГАЦИЯ -->
-  <div class="bnav" id="bottom-nav" style="display:none">
+  <!-- НИЖНЯЯ НАВИГАЦИЯ (без диалога) -->
+  <div class="bnav" id="bnav" style="display:none">
     <div class="nb active" id="nb-feed" onclick="switchTab('feed')">
       <svg viewBox="0 0 20 20" fill="none">
         <rect x="3" y="3" width="5" height="5" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
@@ -191,7 +187,7 @@
         <circle cx="7" cy="8" r="3" stroke="currentColor" stroke-width="1.2"/>
         <path d="M2 16 C2 13 4 11 7 11 C10 11 12 13 12 16"
           stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-        <path d="M14 8 L18 8 M16 6 L16 10"
+        <path d="M14 8L18 8 M16 6L16 10"
           stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
       </svg>
       контакты
@@ -206,27 +202,26 @@
     </div>
     <div class="nb" id="nb-notif" onclick="switchTab('notif')">
       <svg viewBox="0 0 20 20" fill="none">
-        <path d="M10 3 C7.5 3 5.5 5 5.5 7.5 L5.5 12 L3.5 14
-          L16.5 14 L14.5 12 L14.5 7.5 C14.5 5 12.5 3 10 3Z"
+        <path d="M10 3C7.5 3 5.5 5 5.5 7.5L5.5 12L3.5 14L16.5 14L14.5 12L14.5 7.5C14.5 5 12.5 3 10 3Z"
           stroke="currentColor" stroke-width="1.2" fill="none"/>
-        <path d="M8 14 C8 15.1 9 16 10 16 C11 16 12 15.1 12 14"
+        <path d="M8 14C8 15.1 9 16 10 16C11 16 12 15.1 12 14"
           stroke="currentColor" stroke-width="1.2"/>
       </svg>
       события
-      <div class="nbadge" id="badge-notif" style="display:none">3</div>
+      <div class="nbadge" id="badge-n" style="display:none">2</div>
     </div>
     <div class="nb" id="nb-profile" onclick="switchTab('profile')">
       <svg viewBox="0 0 20 20" fill="none">
         <circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.2"/>
-        <path d="M4 17 C4 14 6.5 12 10 12 C13.5 12 16 14 16 17"
+        <path d="M4 17C4 14 6.5 12 10 12C13.5 12 16 14 16 17"
           stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
       </svg>
       я
     </div>
   </div>
 
-</div>
-</div>
+</div><!-- .app -->
+</div><!-- #root -->
 
 <script src="glyphs.js"></script>
 <script src="app.js"></script>
