@@ -282,3 +282,51 @@ html, body { height: 100%; background: var(--bg3); font-family: var(--font); }
 .rsw { font-size: 11px; color: var(--tx3); text-align: center; cursor: pointer; }
 .rsw span { color: var(--tx2); text-decoration: underline; }
 .errmsg { font-size: 11px; color: var(--red); text-align: center; min-height: 14px; }
+/* chat header */
+.chat-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 15px; border-bottom: 0.5px solid var(--bd); flex-shrink: 0;
+}
+.chat-back { font-size: 14px; color: var(--tx2); cursor: pointer; padding: 4px; }
+.chat-who  { font-size: 12px; font-weight: 500; color: var(--tx); flex: 1; }
+
+/* compose keyboard */
+.compose-area { flex-shrink: 0; border-top: 0.5px solid var(--bd); background: var(--bg); }
+.compose-input {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 12px; min-height: 50px; flex-wrap: wrap; cursor: pointer;
+}
+.compose-placeholder { font-size: 12px; color: var(--tx3); flex: 1; }
+.compose-glyph {
+  width: 34px; height: 34px; border: 0.5px solid var(--bd2);
+  border-radius: 7px; display: flex; align-items: center; justify-content: center;
+  background: var(--bg2); flex-shrink: 0; position: relative;
+}
+.compose-glyph svg { width: 18px; height: 18px; }
+.compose-glyph .rm {
+  position: absolute; top: -5px; right: -5px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--tx3); color: var(--bg);
+  font-size: 9px; display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.compose-actions {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 12px 10px;
+}
+.open-lib-btn {
+  display: flex; align-items: center; gap: 5px; font-size: 11px;
+  color: var(--tx2); padding: 5px 12px; border: 0.5px solid var(--bd);
+  border-radius: 20px; background: var(--bg2); cursor: pointer;
+}
+.sbtn {
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 0.5px solid var(--bd2); background: var(--bg2);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--tx); flex-shrink: 0;
+}
+
+/* adaptive */
+@media (max-width: 480px) {
+  .app { max-width: 100%; height: 100vh; max-height: 100vh; border-radius: 0; border: none; }
+  .lgrid { grid-template-columns: repeat(4, 1fr); }
+}
