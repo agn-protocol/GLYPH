@@ -78,17 +78,33 @@
 
   <!-- ДИАЛОГ -->
   <div id="s-chat" class="screen">
-    <div class="slabel" id="chat-with-label">диалог</div>
-    <div class="chat-body" id="chat-body"></div>
-    <div class="compose">
-      <div class="chint" onclick="openLibraryForChat()">выбери образ...</div>
-      <div class="sbtn" onclick="sendChatMsg()">
+  <div class="chat-header">
+    <div class="chat-back" onclick="switchTab('contacts')">‹</div>
+    <div class="chat-who" id="chat-who">диалог</div>
+  </div>
+  <div class="chat-body" id="chat-body"></div>
+  <div class="compose-area">
+    <div class="compose-input" id="compose-input" onclick="focusCompose()">
+      <span class="compose-placeholder" id="compose-ph">нажми + чтобы добавить образ...</span>
+    </div>
+    <div class="compose-actions">
+      <div class="open-lib-btn" onclick="openLib()">
+        <svg viewBox="0 0 14 14" fill="none" width="12" height="12">
+          <rect x="1" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1"/>
+          <rect x="8" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1"/>
+          <rect x="1" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1"/>
+          <rect x="8" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1"/>
+        </svg>
+        добавить образ
+      </div>
+      <div class="sbtn" onclick="sendMsg()">
         <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
           <path d="M3 13 L13 8 L3 3 L3 7 L10 8 L3 9 Z" fill="currentColor"/>
         </svg>
       </div>
     </div>
   </div>
+</div>
 
   <!-- ПОИСК -->
   <div id="s-search" class="screen">
