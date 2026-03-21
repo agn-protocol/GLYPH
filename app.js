@@ -5,7 +5,7 @@ var DB = {
   l: function(k, d) { try { var v = localStorage.getItem('g_' + k); return v !== null ? JSON.parse(v) : d; } catch(e) { return d; } }
 };
 
-// ─── ОБЩИЙ РЕЕСТР ПОЛЬЗОВАТЕЛЕЙ (имитация общей базы) ────────────────────────
+// ─── ОБЩИЙ РЕЕСТР ПОЛЬЗОВАТЕЛЕЙ ──────────────────────────────────────────────
 
 var USERS = DB.l('all_users', [
   { id:'demo1', email:'wolf@glyph.app',  glyphs:['волк','луна','огонь'] },
@@ -23,16 +23,18 @@ var S = {
   feed:      DB.l('feed', [
     { id:1, who:['гора','глаз','земля'], time:'сегодня 14:32', glyphs:['звезда','земля','огонь'], likes:5 },
     { id:2, who:['вода','звезда'],       time:'вчера 22:07',   glyphs:['луна','путь','вода'],     likes:12 },
+    { id:3, who:['спираль','тень'],      time:'вчера 18:15',   glyphs:['эхо','граница'],          likes:3 },
   ]),
   notifs: DB.l('notifs', [
-    { id:1, type:'reply', read:false, time:'2 мин', glyphs:['огонь'],        reply:['луна','волк'] },
-    { id:2, type:'match', read:false, time:'1 ч',   glyphs:['гора','глаз'],  match:['глаз'] },
+    { id:1, type:'reply', read:false, time:'2 мин', glyphs:['огонь'],       reply:['луна','волк'] },
+    { id:2, type:'match', read:false, time:'1 ч',   glyphs:['гора','глаз'], match:['глаз'] },
     { id:3, type:'added', read:true,  time:'вчера', glyphs:['волна','спираль'] },
   ]),
-  prev:      'feed',
-  chatWith:  null,
-  pending:   [],
-  loginMode: false,
+  prev:        'feed',
+  chatWith:    null,
+  pending:     [],
+  feedPending: [],
+  loginMode:   false,
 };
 
 // ─── ИНИЦИАЛИЗАЦИЯ ───────────────────────────────────────────────────────────
@@ -65,20 +67,15 @@ function doReg() {
   var pass  = document.getElementById('r-pass').value;
   var name  = document.getElementById('r-name').value.trim();
   var err   = document.getElementById('r-err');
-
   if (!email || !pass)      { err.textContent = 'заполни почту и пароль'; return; }
   if (!email.includes('@')) { err.textContent = 'неверный формат почты';  return; }
   if (pass.length < 6)      { err.textContent = 'пароль минимум 6 символов'; return; }
-
   err.textContent = '';
   var id = 'u' + Date.now();
   S.user = { id: id, email: email, name: name || email.split('@')[0] };
   DB.s('user', S.user);
-
-  // Добавляем в общий реестр — все новые пользователи видны у всех в контактах
   USERS.push({ id: id, email: email, glyphs: [] });
   DB.s('all_users', USERS);
-
   showMain();
 }
 
@@ -131,17 +128,101 @@ function markRead() {
 
 function renderFeed() {
   var el = document.getElementById('feed-list');
-  el.innerHTML = S.feed.map(function(item) {
+
+  var compose = '<div class="feed-compose">'
+    + '<div class="fc-glyphs" id="fc-glyphs" onclick="openFeedLib()">'
+    + '<span class="fc-ph" id="fc-ph">что хочешь сказать?</span>'
+    + '</div>'
+    + '<div class="fc-add" onclick="openFeedLib()">'
+    + '<svg viewBox="0 0 16 16" fill="none" width="16" height="16"><line x1="8" y1="3" x2="8" y2="13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="3" y1="8" x2="13" y2="8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>'
+    + '</div>'
+    + '<div class="fc-send" onclick="publishPost()">'
+    + '<svg viewBox="0 0 16 16" fill="none" width="14" height="14"><path d="M3 13 L13 8 L3 3 L3 7 L10 8 L3 9 Z" fill="currentColor"/></svg>'
+    + '</div></div>';
+
+  var items = S.feed.map(function(item) {
     return '<div class="feed-item">'
       + '<div class="astrip">' + item.who.slice(0,3).map(function(g){ return glyphEl(g,'ag'); }).join('') + '</div>'
       + '<div class="fbody">'
       + '<div class="fmeta"><span class="fwho">' + item.who.join(' · ') + '</span><span class="ftime">' + item.time + '</span></div>'
       + '<div class="mstrip">' + item.glyphs.map(function(g){ return glyphEl(g,'mg'); }).join('') + '</div>'
       + '<div class="factions">'
-      + '<div class="abtn"><svg viewBox="0 0 12 12" fill="none" width="10" height="10"><path d="M6 10 C3 8 1 6 1 4 C1 2.5 2.5 1 4 2 C5 2.5 6 3.5 6 3.5 C6 3.5 7 2.5 8 2 C9.5 1 11 2.5 11 4 C11 6 9 8 6 10Z" stroke="currentColor" stroke-width="1" fill="none"/></svg> ' + item.likes + '</div>'
+      + '<div class="abtn" onclick="likePost(' + item.id + ',this)"><svg viewBox="0 0 12 12" fill="none" width="10" height="10"><path d="M6 10 C3 8 1 6 1 4 C1 2.5 2.5 1 4 2 C5 2.5 6 3.5 6 3.5 C6 3.5 7 2.5 8 2 C9.5 1 11 2.5 11 4 C11 6 9 8 6 10Z" stroke="currentColor" stroke-width="1" fill="none"/></svg> ' + item.likes + '</div>'
       + '<div class="abtn" onclick="openChat(\'' + item.who[0] + '\',\'feed_' + item.id + '\')"><svg viewBox="0 0 12 12" fill="none" width="10" height="10"><path d="M2 9 L2 5 L5 2 L10 2 L10 7 L7 7 L5 9 Z" stroke="currentColor" stroke-width="1" fill="none"/></svg> ответить</div>'
       + '</div></div></div>';
   }).join('');
+
+  el.innerHTML = compose + items;
+
+  // Восстанавливаем образы в поле публикации если они были
+  if (S.feedPending.length) renderFeedCompose();
+}
+
+function renderFeedCompose() {
+  var fc = document.getElementById('fc-glyphs');
+  var ph = document.getElementById('fc-ph');
+  if (!fc) return;
+  var old = fc.querySelectorAll('.fc-glyph');
+  old.forEach(function(e){ e.remove(); });
+  if (S.feedPending.length === 0) {
+    if (ph) ph.style.display = '';
+  } else {
+    if (ph) ph.style.display = 'none';
+    S.feedPending.forEach(function(k, i) {
+      var d = document.createElement('div');
+      d.className = 'fc-glyph';
+      d.innerHTML = makeSVG(k, 16)
+        + '<div class="rm" onclick="event.stopPropagation();removeFeedPending(' + i + ')">×</div>';
+      fc.appendChild(d);
+    });
+  }
+}
+
+function removeFeedPending(i) {
+  S.feedPending.splice(i, 1);
+  renderFeedCompose();
+}
+
+function openFeedLib() {
+  var el = document.getElementById('lib-chat');
+  el.innerHTML = GKEYS.map(function(k) {
+    return '<div class="li" onclick="pickFeedGlyph(\'' + k + '\')">'
+      + '<div class="lg">' + makeSVG(k, 23) + '</div>'
+      + '<div class="lname">' + k + '</div></div>';
+  }).join('');
+  S.prev = 'feed';
+  switchScreen('lib');
+}
+
+function pickFeedGlyph(k) {
+  S.feedPending.push(k);
+  switchTab('feed');
+  renderFeedCompose();
+}
+
+function publishPost() {
+  if (!S.feedPending.length) return;
+  var now  = new Date();
+  var time = 'сегодня ' + now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
+  var myWho = S.myG.length ? S.myG.slice(0, 3) : ['пустота'];
+  S.feed.unshift({
+    id: Date.now(),
+    who: myWho,
+    time: time,
+    glyphs: S.feedPending.slice(),
+    likes: 0
+  });
+  DB.s('feed', S.feed);
+  S.feedPending = [];
+  renderFeed();
+}
+
+function likePost(id, btn) {
+  var item = S.feed.filter(function(x){ return x.id === id; })[0];
+  if (!item) return;
+  item.likes++;
+  DB.s('feed', S.feed);
+  if (btn) btn.innerHTML = '<svg viewBox="0 0 12 12" fill="none" width="10" height="10"><path d="M6 10 C3 8 1 6 1 4 C1 2.5 2.5 1 4 2 C5 2.5 6 3.5 6 3.5 C6 3.5 7 2.5 8 2 C9.5 1 11 2.5 11 4 C11 6 9 8 6 10Z" stroke="currentColor" stroke-width="1" fill="none"/></svg> ' + item.likes;
 }
 
 // ─── ПОИСК ───────────────────────────────────────────────────────────────────
@@ -151,7 +232,7 @@ function renderSearch() {
   var el = document.getElementById('search-list');
   var list = USERS.filter(function(u) {
     return u.id !== (S.user && S.user.id)
-      && (!q || u.email.includes(q) || u.glyphs.some(function(g) { return g.includes(q); }));
+      && (!q || u.email.includes(q) || u.glyphs.some(function(g){ return g.includes(q); }));
   });
   if (!list.length) {
     el.innerHTML = '<div style="padding:24px 15px;text-align:center;font-size:12px;color:var(--tx3)">пока никого нет — позови друзей</div>';
@@ -207,14 +288,12 @@ function showUserDetail(id, glyphsStr) {
 }
 
 function renderContacts() {
-  // Авто-добавляем всех из реестра
   USERS.forEach(function(u) {
     if (u.id !== (S.user && S.user.id) && !isContact(u.id)) {
       S.contacts.push({ id: u.id, glyphs: u.glyphs.length ? u.glyphs : ['пустота'], email: u.email });
     }
   });
   DB.s('contacts', S.contacts);
-
   var el = document.getElementById('contacts-list');
   if (!S.contacts.length) {
     el.innerHTML = '<div style="padding:24px 15px;text-align:center;font-size:12px;color:var(--tx3)">пока нет контактов</div>';
@@ -250,7 +329,7 @@ function renderNotif() {
 }
 
 function showNotifDetail(id) {
-  var n = S.notifs.filter(function(x) { return x.id === id; })[0];
+  var n = S.notifs.filter(function(x){ return x.id === id; })[0];
   if (!n) return;
   S.prev = 'notif';
   var html = '';
@@ -294,17 +373,12 @@ function renderLibProfile() {
 
 function toggleG(k) {
   var i = S.myG.indexOf(k);
-  if (i !== -1) {
-    S.myG.splice(i, 1);
-  } else {
-    if (S.myG.length >= 8) { alert('максимум 8 образов'); return; }
-    S.myG.push(k);
-  }
+  if (i !== -1) { S.myG.splice(i, 1); }
+  else { if (S.myG.length >= 8) { alert('максимум 8 образов'); return; } S.myG.push(k); }
   DB.s('myG', S.myG);
   var el = document.getElementById('lg-' + k);
   if (el) el.className = 'lg' + (S.myG.indexOf(k) !== -1 ? ' sel' : '');
   document.getElementById('p-glyphs').innerHTML = S.myG.map(function(g){ return glyphEl(g,'pg'); }).join('');
-  // Обновляем образы в реестре
   var u = USERS.filter(function(x){ return x.id === S.user.id; })[0];
   if (u) { u.glyphs = S.myG; DB.s('all_users', USERS); }
 }
@@ -343,21 +417,22 @@ function renderChat() {
 function renderCompose() {
   var ci = document.getElementById('compose-input');
   var ph = document.getElementById('compose-ph');
+  if (!ci) return;
   ci.querySelectorAll('.compose-glyph').forEach(function(e){ e.remove(); });
   if (S.pending.length === 0) {
-    ph.style.display = '';
+    if (ph) ph.style.display = '';
   } else {
-    ph.style.display = 'none';
+    if (ph) ph.style.display = 'none';
     S.pending.forEach(function(k, i) {
       var d = document.createElement('div');
       d.className = 'compose-glyph';
-      d.innerHTML = makeSVG(k, 18) + '<div class="rm" onclick="removeFromCompose(' + i + ')">×</div>';
+      d.innerHTML = makeSVG(k, 18) + '<div class="rm" onclick="removePending(' + i + ')">×</div>';
       ci.appendChild(d);
     });
   }
 }
 
-function removeFromCompose(i) {
+function removePending(i) {
   S.pending.splice(i, 1);
   renderCompose();
 }
